@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Neuroparticles</title>
+<style>
+:root{
+	--bg-main: #262626;
+	--bg-panel: #101010;
+	--bg-panel-soft: #373140;
+	--border-soft: #333333;
+	--text-main: #dedede;
+	--text-dim: #dedede;
+	--accent: #dedede;
+	--btn-bg: #000000;
+	--btn-border: #373140;
+	--btn-hover-bg: #111111;
+	--btn-active-bg: #474747;
+	--font-main: Consolas, "Courier New", monospace;
+}
+
+*{ box-sizing:border-box; }
+
+html, body{
+	margin:0;
+	padding:0;
+	height:100%;
+	background:
+		radial-gradient(circle at top left,#777,#262626 45%,#111 80%);
+	color:var(--text-main);
+	font-family:var(--font-main);
+	font-size:17px;
+}
+
+/* WINDOW */
+
+#cmd-window{
+	position:absolute;
+	top:40px;
+	left:40px;
+	width:700px;
+	height:700px;
+	background-color: rgba(16,16,16,0.75);
+	border:1px solid rgba(255,255,255,0.08);
+	display:flex;
+	flex-direction:column;
+	overflow:hidden;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+#cmd-window.closed{ display:none; }
+
+/* TITLE BAR */
+
+#cmd-titlebar{
+	height:30px;
+	background:linear-gradient(to bottom,rgba(26,26,26,0.95),rgba(5,5,5,0.95));
+	color:#ffffff;
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	padding:0 6px;
+	font-size:15px;
+	user-select:none;
+	cursor:move;
+}
+#cmd-titlebar-left{ display:flex; align-items:center; gap:6px; }
+#cmd-caption{ white-space:nowrap; }
+#cmd-titlebar-right{ display:flex; align-items:center; }
+.cmd-sysbtn{
+	width:28px;
+	height:18px;
+	text-align:center;
+	line-height:18px;
+	font-size:11px;
+	color:#ffffff;
+	cursor:default;
+}
+.cmd-sysbtn:hover{ background:#2a2a2a; }
+
+/* CLIENT */
+
+#cmd-client{
+	flex:1;
+	display:flex;
+	flex-direction:column;
+	background-color: rgba(55,49,64,0.80);
+	border-top:1px solid rgba(0,0,0,0.9);
+	padding:4px 6px 6px 6px;
+}
+#cmd-window.minimized #cmd-client{ display:none; }
+
+/* TOP BUTTONS */
+
+.topbuttons{
+	background-color:transparent;
+	color:var(--text-dim);
+	margin:0 0 4px 0;
+	padding:0;
+	display:flex;
+	align-items:center;
+	gap:4px;
+}
+.topbuttons input{
+	margin:0;
+	padding:2px 10px;
+	background-color:var(--btn-bg);
+	color:var(--text-main);
+	border:1px solid var(--btn-border);
+	font-family:var(--font-main);
+	font-size:18px;
+	cursor:pointer;
+}
+.topbuttons input:hover{ background-color:var(--btn-hover-bg); }
+.topbuttons input:active{ background-color:var(--btn-active-bg); }
+
+/* MAIN */
+
+#cmd-main{
+	flex:1;
+	display:flex;
+	gap:6px;
+	min-height:0;
+}
+#canv-wrapper{
+	flex:1;
+	background:#000000;
+	border:1px solid var(--border-soft);
+	padding:2px;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	overflow:hidden;
+}
+#canv{ margin:0; padding:0; }
+#side-panel{
+	width:100px;
+	display:flex;
+	flex-direction:column;
+	gap:4px;
+}
+.panel-box{
+	background-color:#000000;
+	border:1px solid var(--border-soft);
+	padding:3px 4px;
+	color:var(--text-dim);
+	font-size:20px;
+	overflow:auto;
+	min-height:55px;
+}
+
+/* FOOTER */
+
+.footerbuttons{
+	margin-top:4px;
+	padding:3px 2px 0 2px;
+	border-top:1px solid #000000;
+	color:var(--text-dim);
+	display:flex;
+	align-items:center;
+	gap:10px;
+	flex-wrap:wrap;
+}
+.footerbuttons input[type="text"]{
+	width:44px;
+	background:#000000;
+	color:var(--text-main);
+	border:1px solid var(--btn-border);
+	font-family:var(--font-main);
+	font-size:15px;
+	padding:1px 4px;
+}
+.footerbuttons input[type="button"]{
+	margin:0;
+	padding:6px 10px;
+	background-color:var(--btn-bg);
+	color:var(--text-main);
+	border:1px solid var(--btn-border);
+	font-family:var(--font-main);
+	font-size:14px;
+	cursor:pointer;
+}
+.footerbuttons input[type="button"]:hover{ background-color:var(--btn-hover-bg); }
+.footerbuttons input[type="button"]:active{ background-color:var(--btn-active-bg); }
+
+/* LOGS */
+
+#console-log0, #console-log1, #console-log2, #console-log3{
+	background-color:transparent;
+	color:var(--text-main);
+	font-family:var(--font-main);
+	font-size:13px;
+	white-space:pre-wrap;
+}
+#canv2{ margin:0; padding:0; }
+
+/* CRT */
+
+#cmd-window::after{
+	content:"";
+	position:absolute;
+	inset:0;
+	pointer-events:none;
+	background:linear-gradient(
+		to bottom,
+		rgba(255,255,255,0.05) 1px,
+		rgba(0,0,0,0.2) 1px
+	);
+	background-size:100% 3px;
+	mix-blend-mode:overlay;
+	opacity:0.25;
+}
+
+/* DESKTOP ICON */
+
+.desktop-icon{
+	position:absolute;
+	top:20px;
+	left:20px;
+	width:90px;
+	text-align:center;
+	color:#f0f0f0;
+	cursor:pointer;
+	font-size:13px;
+	user-select:none;
+}
+.desktop-icon .icon-image{
+	width:52px;
+	height:52px;
+	margin:0 auto 6px auto;
+	background:rgba(0,0,0,0.55);
+	border-radius:10px;
+	border:1px solid rgba(255,255,255,0.18);
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	font-size:26px;
+}
+.desktop-icon:hover .icon-image{
+	background:rgba(32,32,32,0.85);
+}
+
+/* SNAP PREVIEW */
+
+#snap-preview{
+	position:fixed;
+	top:0;
+	left:0;
+	width:0;
+	height:0;
+	border:2px dashed rgba(255,255,255,0.7);
+	background:rgba(255,255,255,0.12);
+	pointer-events:none;
+	z-index:9999;
+	display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="desktop-icon" onclick="toggleWindow()">
+	<div class="icon-image">N</div>
+	<div>Neuroparticles</div>
+</div>
+
+<div id="snap-preview"></div>
+
+<div id="cmd-window" class="closed">
+	<div id="cmd-titlebar">
+		<div id="cmd-titlebar-left">
+			<div id="cmd-caption">Neuroparticles.exe - terminal</div>
+		</div>
+		<div id="cmd-titlebar-right">
+			<div class="cmd-sysbtn" id="btn-min">─</div>
+			<div class="cmd-sysbtn" id="btn-max">☐</div>
+			<div class="cmd-sysbtn" id="btn-close">✕</div>
+		</div>
+	</div>
+
+	<div id="cmd-client">
+		<div class="topbuttons">
+			<input type="button" value="Start" onClick="start();" />
+			<input type="button" value="Stop" onClick="stop();" />
+			<input type="button" value="One" onClick="onestep();" />
+		</div>
+
+		<div id="cmd-main">
+			<div id="canv-wrapper"><div id="canv"></div></div>
+			<div id="side-panel">
+				<div class="panel-box"><div id="console-log0"></div></div>
+				<div class="panel-box"><div id="console-log1"></div></div>
+				<div class="panel-box"><div id="console-log2"></div></div>
+				<div class="panel-box"><div id="console-log3"></div></div>
+				<div class="panel-box"><div id="canv2"></div></div>
+			</div>
+		</div>
+
+		<div class="footerbuttons">
+			<div id="mp1">Mutations
+				<input type="text" id="mutatepercent" value="5" oninput="syncParams()" />%
+			</div>
+			<div id="mp2">Gens
+				<input type="text" id="mutategen" value="1" oninput="syncParams()" />
+			</div>
+			<input type="button" value="Recreate" onClick="recreate();" />
+		</div>
+	</div>
+</div>
+
+<script>
+/* === СИМУЛЯЦИЯ (как раньше) === */
+const sizex = 100;
+const sizey = 100;
+const size = 5;
+
+const agents = [
+	{ id: 'R', color: [255, 0, 0], pop: [], a: [], field: [], startHp: 10000},
+	{ id: 'G', color: [0, 255, 0], pop: [], a: [], field: [], startHp: 10000},
+	{ id: 'B', color: [0, 0, 255], pop: [], a: [], field: [], startHp: 10000},
+];
+
+const typesAmount = agents.length;
+const firstlayersize = 11 * 11 * typesAmount;
+const secondlayersize = 25;
+const movesize = 9;
+const stayBias = 1;
+
+const neurosize = firstlayersize * secondlayersize + secondlayersize * movesize + secondlayersize;
+const baisfrom = neurosize - secondlayersize;
+const secondlayerfrom = firstlayersize * secondlayersize;
+
+let mutation, mutategen;
+const populationsize = 200;
+const hpPenaltyFromSelfOrEnemy = 100;
+const hpRewardFromFriend = 100;
+const baseDecayPerStep = 1;
+const crossoverRate = 0.5;
+const mutationRange = 4;
+
+let timerId = false, c = 0;
+
+function recreate() {
+	agents.forEach(agent => {
+		agent.pop = [];
+		for (let n = 0; n < populationsize; n++) {
+			agent.pop[n] = [];
+			for (let i = 0; i < neurosize; i++) agent.pop[n][i] = Math.random() * 4 - 2;
+		}
+	});
+}
+
+function syncParams() {
+	const log3 = document.getElementById('console-log3');
+	mutation = +document.getElementById("mutatepercent").value;
+	mutategen = +document.getElementById("mutategen").value;
+	log3.innerHTML = `mutation: ${mutation}%, gens: ${mutategen}`;
+}
+
+function init() {
+	mutation = +document.getElementById("mutatepercent").value;
+	mutategen = +document.getElementById("mutategen").value;
+	recreate();
+
+	const canv = document.getElementById('canv');
+	const canvas1 = document.createElement('canvas');
+	canvas1.id = "c0";
+	canvas1.width = sizex * size;
+	canvas1.height = sizey * size;
+	canv.appendChild(canvas1);
+
+	agents.forEach(agent => {
+		agent.a = [];
+		for (let i = 0; i < populationsize; i++) {
+			agent.a[i] = [agent.startHp, Math.floor(Math.random() * sizex), Math.floor(Math.random() * sizey), 0];
+		}
+	});
+
+	fillfield();
+	draw();
+}
+
+function fillfield() {
+	agents.forEach(agent => {
+		agent.field = Array.from({ length: sizex }, () => new Int8Array(sizey));
+		agent.a.forEach(([_, x, y]) => { agent.field[x][y]++; });
+	});
+}
+
+function draw() {
+	const ctx = document.getElementById('c0').getContext('2d');
+	ctx.fillStyle = 'rgb(0,0,0)';
+	ctx.fillRect(0, 0, sizex * size, sizey * size);
+
+	for (let x = 0; x < sizex; x++) {
+		for (let y = 0; y < sizey; y++) {
+			let r = 0, g = 0, b = 0;
+			agents.forEach(agent => {
+				if (agent.field[x][y] > 0) {
+					r += agent.color[0];
+					g += agent.color[1];
+					b += agent.color[2];
+				}
+			});
+			r = Math.min(r, 255);
+			g = Math.min(g, 255);
+			b = Math.min(b, 255);
+			if (r || g || b) {
+				ctx.fillStyle = `rgb(${r},${g},${b})`;
+				ctx.fillRect(x * size, y * size, size, size);
+			}
+		}
+	}
+}
+
+function evaluateNetwork(input, weights) {
+	const hiddenLayer = new Array(secondlayersize).fill(0);
+	const output = new Array(movesize).fill(0);
+	for (let j = 0; j < secondlayersize; j++) {
+		let sum = 0;
+		for (let k = 0; k < firstlayersize; k++) sum += input[k] * weights[j * firstlayersize + k];
+		sum += weights[baisfrom + j];
+		hiddenLayer[j] = 1 / (1 + Math.exp(-sum));
+	}
+	for (let j = 0; j < movesize; j++) {
+		for (let k = 0; k < secondlayersize; k++) {
+			output[j] += hiddenLayer[k] * weights[secondlayerfrom + j * secondlayersize + k];
+		}
+	}
+	return output;
+}
+
+function getInputs(x, y) {
+	const input = [];
+	for (let dy = -5; dy <= 5; dy++) {
+		const yy = (y + dy + sizey) % sizey;
+		for (let dx = -5; dx <= 5; dx++) {
+			const xx = (x + dx + sizex) % sizex;
+			for (let k = 0; k < typesAmount; k++) input.push(agents[k].field[xx][yy]);
+		}
+	}
+	return input;
+}
+
+function moveByIndex(agent, index) {
+	switch (index) {
+		case 0: agent[1]--; agent[2]--; break;
+		case 1: agent[2]--; break;
+		case 2: agent[1]++; agent[2]--; break;
+		case 3: agent[1]--; break;
+		case 5: agent[1]++; break;
+		case 6: agent[1]--; agent[2]++; break;
+		case 7: agent[2]++; break;
+		case 8: agent[1]++; agent[2]++; break;
+	}
+	agent[1] = (agent[1] + sizex) % sizex;
+	agent[2] = (agent[2] + sizey) % sizey;
+}
+
+function evolveAgent(agentIndex) {
+	const agent = agents[agentIndex];
+	const enemies = agents[(agentIndex + typesAmount - 1) % typesAmount];
+	const friends = agents[(agentIndex + 1) % typesAmount];
+	const survivors = [];
+
+	agent.a.forEach((a, i) => {
+		const [hp, x, y] = a;
+
+		if (agent.field[x][y] > 1 || enemies.field[x][y] > 0) a[0] -= hpPenaltyFromSelfOrEnemy;
+		if (friends.field[x][y] > 0) a[0] += hpRewardFromFriend;
+
+		a[0] -= baseDecayPerStep;
+		a[3]++;
+
+		if (a[0] > 0) survivors.push([agent.pop[i], a]);
+	});
+
+	agent.pop = survivors.map(x => x[0]);
+	agent.a = survivors.map(x => x[1]);
+
+	if (agent.a.length >= populationsize - 1) return;
+
+	survivors.sort((a, b) => b[1][3] - a[1][3]);
+	const addcount = Math.floor((populationsize - agent.a.length) / 2);
+	const pool = survivors.slice(0, addcount * 2).map(x => x[0]);
+
+	for (let i = 0; i < addcount; i++) {
+		const parent1 = pool[Math.floor(Math.random() * pool.length)];
+		const parent2 = pool[Math.floor(Math.random() * pool.length)];
+
+		const child1 = [], child2 = [];
+
+		for (let j = 0; j < neurosize; j++) {
+			if (Math.random() < crossoverRate) {
+				child1[j] = parent1[j];
+				child2[j] = parent2[j];
+			} else {
+				child1[j] = parent2[j];
+				child2[j] = parent1[j];
+			}
+		}
+
+		[child1, child2].forEach(child => {
+			if (Math.random() < mutation / 100) {
+				for (let m = 0; m < mutategen; m++) {
+					child[Math.floor(Math.random() * neurosize)] = Math.random() * mutationRange - mutationRange / 2;
+				}
+			}
+		});
+
+		agent.pop.push(child1, child2);
+		agent.a.push(
+			[agent.startHp, Math.floor(Math.random() * sizex), Math.floor(Math.random() * sizey), 0],
+			[agent.startHp, Math.floor(Math.random() * sizex), Math.floor(Math.random() * sizey), 0]
+		);
+	}
+}
+
+function decideAndMove(agentIndex) {
+	const agent = agents[agentIndex];
+	for (let i = 0; i < agent.a.length; i++) {
+		const [_, x, y] = agent.a[i];
+		const input = getInputs(x, y);
+		const output = evaluateNetwork(input, agent.pop[i]);
+		output[4] += stayBias;
+		let max = output[0], maxI = 0;
+		for (let j = 1; j < output.length; j++) {
+			if (output[j] > max) { max = output[j]; maxI = j; }
+		}
+		moveByIndex(agent.a[i], maxI);
+	}
+}
+
+function countpoints() {
+	c++;
+	document.getElementById('console-log0').innerHTML = c;
+
+	agents.forEach((_, i) => evolveAgent(i));
+	document.getElementById('console-log2').innerHTML =
+		agents.map(agent => Math.max(0, ...agent.a.map(a => a[3]))).join(', ');
+	agents.forEach((_, i) => decideAndMove(i));
+	fillfield();
+	draw();
+
+	const hello1 = document.getElementById('console-log1');
+	hello1.innerHTML = agents.map(a => a.a.length).join(',');
+}
+
+function onestep(){ countpoints(); }
+function start(){ if (!timerId) timerId = setInterval(countpoints, 1); }
+function stop(){ if (timerId){ clearInterval(timerId); timerId = false; }}
+
+/* === ОКНО / SNAP – ФИКС === */
+
+const win = document.getElementById('cmd-window');
+const titlebar = document.getElementById('cmd-titlebar');
+const btnMin = document.getElementById('btn-min');
+const btnMax = document.getElementById('btn-max');
+const btnClose = document.getElementById('btn-close');
+const snapPreview = document.getElementById('snap-preview');
+
+let windowState = 'normal'; // normal, fullscreen, half-left, half-right, quarter-*
+let prevRect = {top:40,left:40,width:700,height:700};
+let isDragging = false;
+let dragOffset = {x:0,y:0};
+
+function applyWindowState(state){
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+
+	if (state === 'fullscreen'){
+		// FIX: сохраняем предыдущее положение ТОЛЬКО при входе в fullscreen
+		prevRect = {
+			top: win.offsetTop,
+			left: win.offsetLeft,
+			width: win.offsetWidth,
+			height: win.offsetHeight
+		};
+		win.style.top = '0px';
+		win.style.left = '0px';
+		win.style.width = vw + 'px';
+		win.style.height = vh + 'px';
+		windowState = 'fullscreen';
+		return;
+	}
+
+	if (state === 'half-left'){
+		win.style.top = '0px';
+		win.style.left = '0px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = vh + 'px';
+		windowState = 'half-left';
+		return;
+	}
+
+	if (state === 'half-right'){
+		win.style.top = '0px';
+		win.style.left = (vw/2) + 'px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = vh + 'px';
+		windowState = 'half-right';
+		return;
+	}
+
+	if (state === 'quarter-tl'){
+		win.style.top = '0px';
+		win.style.left = '0px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = (vh/2) + 'px';
+		windowState = 'quarter-tl';
+		return;
+	}
+
+	if (state === 'quarter-tr'){
+		win.style.top = '0px';
+		win.style.left = (vw/2) + 'px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = (vh/2) + 'px';
+		windowState = 'quarter-tr';
+		return;
+	}
+
+	if (state === 'quarter-bl'){
+		win.style.top = (vh/2) + 'px';
+		win.style.left = '0px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = (vh/2) + 'px';
+		windowState = 'quarter-bl';
+		return;
+	}
+
+	if (state === 'quarter-br'){
+		win.style.top = (vh/2) + 'px';
+		win.style.left = (vw/2) + 'px';
+		win.style.width = (vw/2) + 'px';
+		win.style.height = (vh/2) + 'px';
+		windowState = 'quarter-br';
+		return;
+	}
+
+	// normal
+	win.style.top = prevRect.top + 'px';
+	win.style.left = prevRect.left + 'px';
+	win.style.width = prevRect.width + 'px';
+	win.style.height = prevRect.height + 'px';
+	windowState = 'normal';
+}
+
+function toggleWindow(){
+	win.classList.toggle('closed');
+}
+btnClose.onclick = () => {
+	win.classList.add('closed');
+	windowState = 'normal';
+};
+btnMin.onclick = () => { win.classList.toggle('minimized'); };
+
+// FIX: нормальный toggle fullscreen <-> normal
+btnMax.onclick = () => {
+	if (windowState === 'fullscreen'){
+		applyWindowState('normal');
+	} else {
+		applyWindowState('fullscreen');
+	}
+};
+
+titlebar.addEventListener('dblclick', () => { btnMax.click(); });
+
+titlebar.addEventListener('mousedown', (e) => {
+	if (win.classList.contains('closed') || win.classList.contains('minimized')) return;
+
+	isDragging = true;
+	dragOffset.x = e.clientX - win.offsetLeft;
+	dragOffset.y = e.clientY - win.offsetTop;
+
+	// FIX: при drag из fullscreen выходим в normal, но prevRect не трогаем
+	if (windowState === 'fullscreen'){
+		applyWindowState('normal');
+	}
+});
+
+document.addEventListener('mousemove', (e) => {
+	if (!isDragging) return;
+
+	let newLeft = e.clientX - dragOffset.x;
+	let newTop  = e.clientY - dragOffset.y;
+
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	const margin = 20;
+
+	newLeft = Math.max(0, Math.min(newLeft, vw - win.offsetWidth));
+	newTop  = Math.max(0, Math.min(newTop, vh - win.offsetHeight));
+
+	win.style.left = newLeft + 'px';
+	win.style.top  = newTop + 'px';
+
+	// preview
+	const rect = win.getBoundingClientRect();
+	const left = rect.left;
+	const top  = rect.top;
+	const w    = rect.width;
+	const h    = rect.height;
+
+	let previewState = null;
+
+	if (top <= margin && left > margin && left + w < vw - margin){
+		previewState = 'fullscreen';
+	} else if (left <= margin && top > margin && top + h < vh - margin){
+		previewState = 'half-left';
+	} else if (left + w >= vw - margin && top > margin && top + h < vh - margin){
+		previewState = 'half-right';
+	} else if (top <= margin && left <= margin){
+		previewState = 'quarter-tl';
+	} else if (top <= margin && left + w >= vw - margin){
+		previewState = 'quarter-tr';
+	} else if (top + h >= vh - margin && left <= margin){
+		previewState = 'quarter-bl';
+	} else if (top + h >= vh - margin && left + w >= vw - margin){
+		previewState = 'quarter-br';
+	}
+
+	if (previewState){
+		snapPreview.style.display = 'block';
+		const vw2 = window.innerWidth;
+		const vh2 = window.innerHeight;
+		let pr = {top:0,left:0,width:vw2,height:vh2};
+		if (previewState === 'fullscreen'){
+			pr = {top:0,left:0,width:vw2,height:vh2};
+		} else if (previewState === 'half-left'){
+			pr = {top:0,left:0,width:vw2/2,height:vh2};
+		} else if (previewState === 'half-right'){
+			pr = {top:0,left:vw2/2,width:vw2/2,height:vh2};
+		} else if (previewState === 'quarter-tl'){
+			pr = {top:0,left:0,width:vw2/2,height:vh2/2};
+		} else if (previewState === 'quarter-tr'){
+			pr = {top:0,left:vw2/2,width:vw2/2,height:vh2/2};
+		} else if (previewState === 'quarter-bl'){
+			pr = {top:vh2/2,left:0,width:vw2/2,height:vh2/2};
+		} else if (previewState === 'quarter-br'){
+			pr = {top:vh2/2,left:vw2/2,width:vw2/2,height:vh2/2};
+		}
+		snapPreview.style.top = pr.top + 'px';
+		snapPreview.style.left = pr.left + 'px';
+		snapPreview.style.width = pr.width + 'px';
+		snapPreview.style.height = pr.height + 'px';
+	} else {
+		snapPreview.style.display = 'none';
+	}
+});
+
+document.addEventListener('mouseup', () => {
+	if (!isDragging) return;
+
+	isDragging = false;
+	snapPreview.style.display = 'none';
+
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	const margin = 20;
+	const rect = win.getBoundingClientRect();
+	const left = rect.left;
+	const top  = rect.top;
+	const w    = rect.width;
+	const h    = rect.height;
+
+	let snapState = null;
+
+	// FIX: снап только если реально у края
+	if (top <= margin && left > margin && left + w < vw - margin){
+		snapState = 'fullscreen';
+	} else if (left <= margin && top > margin && top + h < vh - margin){
+		snapState = 'half-left';
+	} else if (left + w >= vw - margin && top > margin && top + h < vh - margin){
+		snapState = 'half-right';
+	} else if (top <= margin && left <= margin){
+		snapState = 'quarter-tl';
+	} else if (top <= margin && left + w >= vw - margin){
+		snapState = 'quarter-tr';
+	} else if (top + h >= vh - margin && left <= margin){
+		snapState = 'quarter-bl';
+	} else if (top + h >= vh - margin && left + w >= vw - margin){
+		snapState = 'quarter-br';
+	}
+
+	if (snapState){
+		applyWindowState(snapState);
+	} else {
+		// произвольное положение: считаем normal и запоминаем
+		windowState = 'normal';
+		prevRect = {
+			top: win.offsetTop,
+			left: win.offsetLeft,
+			width: win.offsetWidth,
+			height: win.offsetHeight
+		};
+	}
+});
+
+/* INIT SIM */
+init();
+</script>
+</body>
+</html>

@@ -2,6 +2,6 @@
 
 ###
 
-[![BIO_AI](https://img.shields.io/badge/-SOURCE_CODE-grey?style=for-the-badge&logo=)](https://github.com/CYGDEN/BIO_AI)
-[![ORIGINAL AUTHOR](https://img.shields.io/badge/-ORIGINAL_AUTHOR-grey?style=for-the-badge&logo=)](https://github.com/xcontcom/neuroparticles)
-[![DEMO](https://img.shields.io/badge/-DEMO-grey?style=for-the-badge&logo=)](https://cygden.github.io/BIO_AI/BIO_AI/CONSOLE.html)
+[![BIO_AI](https://img.shields.io/badge/-SOURCE_CODE-black?style=for-the-badge&logo=)](HTTPS://GITHUB.COM/CYGDEN/BIO_AI)
+[![ORIGINAL AUTHOR](https://img.shields.io/badge/-ORIGINAL_AUTHOR-black?style=for-the-badge&logo=)](HTTPS://GITHUB.COM/XCONTCOM/NEUROPARTICLES)
+[![DEMO](https://img.shields.io/badge/-DEMO-black?style=for-the-badge&logo=)](https://cygden.github.io/BIO_AI/BIO_AI/CONSOLE.html)
